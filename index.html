@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MOTION BECOMES DATA — ระบบวิเคราะห์การเคลื่อนไหวสำหรับสนับสนุนวิทยาศาสตร์การกีฬา</title>
+<meta name="description" content="An interactive scrollytelling site on the mathematics behind sports motion analysis, by Krittayod Vipromha — University of the Thai Chamber of Commerce." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<link rel="preload" as="image" href="assets/project-files/RUNNING.jpg" fetchpriority="high" />
+<!-- Swimming opens the sport sequence and Running follows it immediately, so
+     both are fetched up front; the remaining four are pulled in one sport
+     ahead by the sport controller, never at the moment a transition starts. -->
+<link rel="preload" as="image" href="assets/project-files/SWIMMING.jpg" />
+<link rel="stylesheet" href="/src/styles/main.css" />
+
+<!-- GSAP loads from CDN rather than npm: no build-time dependency, and the
+     page still works if served as plain static files. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+  // If the CDN is blocked, no-op GSAP so the photos and text still render
+  // instead of the page failing blank.
+  if (typeof window.gsap === "undefined") {
+    var noop = function () { return this; };
+    window.gsap = {
+      registerPlugin: function () {}, utils: { clamp: function (a, b, v) { return Math.max(a, Math.min(b, v)); } },
+      timeline: function () { return { to: noop, from: noop, set: noop }; },
+      to: function () {}, from: function () {}, set: function () {}, fromTo: function () {},
+    };
+    window.ScrollTrigger = { create: function () {}, refresh: function () {} };
+    document.documentElement.classList.add("no-gsap");
+    console.warn("GSAP CDN unavailable — animations disabled, content still renders.");
+  }
+</script>
+</head>
+<body>
+
+<div class="bg-grid" data-parallax="0.06" aria-hidden="true"></div>
+<div class="bg-grid bg-grid-2" data-parallax="0.18" aria-hidden="true"></div>
+<div class="bg-vignette" aria-hidden="true"></div>
+
+<svg class="data-thread-fixed" id="dataThreadSvg" aria-hidden="true"><path id="dataThreadPath" /></svg>
+<div class="data-thread-label mono" id="dataThreadLabel">DATA THREAD</div>
+<div class="joint-tooltip mono" id="jointTooltip" aria-hidden="true"></div>
+
+<div class="progress-rail" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+
+<nav class="site-nav">
+  <span class="nav-readout mono"><span id="navCounter">00 / 13</span> · <span id="navLabel">MOTION BECOMES DATA</span></span>
+  <button class="nav-toggle mono" id="navToggle" aria-expanded="false" aria-controls="navMenu">MENU</button>
+</nav>
+<div class="nav-menu" id="navMenu" role="menu"></div>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <section class="scene hero" id="hero">
+    <div class="scene-media">
+      <img class="scene-img" id="heroImage" src="assets/project-files/RUNNING.jpg" alt="Sprinter at full stride on a running track" fetchpriority="high" decoding="async" />
+      <div class="scene-scrim hero-scrim"></div>
+      <svg class="scene-overlay" id="heroOverlay" aria-hidden="true"></svg>
+    </div>
+    <div class="hero-copy">
+      <h1 class="display-xl">MOTION<br/>BECOMES<br/>DATA.</h1>
+      <p class="lede">ระบบวิเคราะห์การเคลื่อนไหวสำหรับสนับสนุนวิทยาศาสตร์การกีฬา</p>
+      <div class="hero-meta mono"><span>Krittayod Vipromha</span><span>2610717302033</span></div>
+    </div>
+    <div class="hero-scroll-cue mono"><span class="arrow">↓</span><span>SCROLL TO ANALYZE</span></div>
+  </section>
+
+  <!-- ================= 01 THE QUESTION ================= -->
+  <section class="scene split-scene" id="q">
+    <div class="split-copy">
+      <span class="kicker mono">01 — THE QUESTION</span>
+      <h2 class="display-l" data-reveal>HOW DO WE MEASURE MOVEMENT?</h2>
+      <p class="body-copy" data-reveal>การเคลื่อนไหวของร่างกายมีการเปลี่ยนแปลงทั้งตำแหน่ง ทิศทาง ความเร็ว และความเร่งตามเวลา — สิ่งที่ตาเปล่าเห็นเป็นเพียง "การวิ่งที่เร็ว" เท่านั้น</p>
+      <p class="body-copy" data-reveal>กล้องบันทึกภาพเดียวกันนี้ไว้ได้ แต่ภาพยังไม่ใช่ข้อมูล จนกว่าเราจะกำหนดจุดอ้างอิงบนร่างกาย</p>
+    </div>
+    <div class="split-media">
+      <img class="scene-img still" src="assets/project-files/RUNNING.jpg" alt="Sprinter mid-stride" loading="lazy" decoding="async" />
+      <svg class="scene-overlay" id="observeOverlay" aria-hidden="true"></svg>
+    </div>
+  </section>
+
+  <!-- ================= 02 COMPUTER VISION ================= -->
+  <section class="scene split-scene reverse" id="cv">
+    <div class="split-copy">
+      <span class="kicker mono">02 — COMPUTER VISION</span>
+      <h2 class="display-l" data-reveal>CAMERA → POSE DETECTION → KEYPOINTS</h2>
+      <p class="body-copy" data-reveal>โมเดลตรวจจับท่าทางระบุตำแหน่งจุดสำคัญของร่างกาย — ศีรษะ ไหล่ ข้อศอก ข้อมือ สะโพก เข่า ข้อเท้า — แล้วแทนแต่ละจุดด้วยพิกัด P₁, P₂, … Pₙ</p>
+      <p class="body-copy" data-reveal>นักกีฬาตัวจริงยังอยู่ตรงนั้นเสมอ ชั้นข้อมูลเป็นเพียงสิ่งที่ซ้อนทับลงไป ไม่ใช่สิ่งที่มาแทนที่</p>
+    </div>
+    <div class="split-media">
+      <img class="scene-img still" src="assets/project-files/RUNNING.jpg" alt="Sprinter with detected keypoints" loading="lazy" decoding="async" />
+      <svg class="scene-overlay" id="cvOverlay" aria-hidden="true"></svg>
+    </div>
+  </section>
+
+  <!-- ================= 03 MATHEMATICS ================= -->
+  <section class="scene math-scene" id="math">
+    <div class="math-media">
+      <img class="scene-img" src="assets/project-files/RUNNING.jpg" alt="Sprinter with mathematical annotations" loading="lazy" decoding="async" />
+      <div class="scene-scrim"></div>
+      <svg class="scene-overlay" id="mathOverlay" aria-hidden="true"></svg>
+    </div>
+    <div class="math-panel">
+      <span class="kicker mono">03 — MATHEMATICS</span>
+      <h2 class="display-m">EVERY EQUATION POINTS AT SOMETHING ON THE BODY</h2>
+      <div class="math-steps" id="mathSteps"></div>
+    </div>
+  </section>
+
+  <!-- ================= 04 KINEMATICS ================= -->
+  <section class="scene split-scene" id="pva">
+    <div class="split-media">
+      <img class="scene-img still" id="pvaImage" src="assets/project-files/RUNNING.jpg" alt="Sprinter position over time" loading="lazy" decoding="async" />
+      <svg class="scene-overlay" id="pvaOverlay" aria-hidden="true"></svg>
+    </div>
+    <div class="split-copy">
+      <span class="kicker mono">04 — KINEMATICS</span>
+      <h2 class="display-l" data-reveal>POSITION → VELOCITY → ACCELERATION</h2>
+      <span class="tag-illustrative mono">ILLUSTRATIVE DATA · SIMULATION</span>
+      <p class="body-copy">เลื่อนแถบเวลาเพื่อดูตำแหน่งข้อเท้าที่เปลี่ยนไป พร้อมความเร็วและความเร่งที่ได้จากอนุพันธ์ของตำแหน่ง</p>
+      <input type="range" min="0" max="100" value="0" class="pva-slider" id="pvaSlider" aria-label="Time" />
+      <div class="pva-readout mono">
+        <div>x(t) <b id="pvaX">0.00 m</b></div>
+        <div>v(t) <b id="pvaV">0.00 m/s</b></div>
+        <div>a(t) <b id="pvaA">0.00 m/s²</b></div>
+      </div>
+      <svg id="pvaGraph" class="pva-graph" viewBox="0 0 400 160" aria-label="Position over time"></svg>
+    </div>
+  </section>
+
+  <!-- ================= SPORT SCENES (built by JS) ================= -->
+  <div id="sportsRoot"></div>
+
+  <!-- ================= 11 ANALYSIS ENGINE ================= -->
+  <section class="section pipeline" id="pipelineSection">
+    <div class="section-head" data-reveal>
+      <span class="kicker mono">11 — ANALYSIS ENGINE</span>
+      <h2 class="display-l">ONE PIPELINE. SIX SPORTS.</h2>
+      <p class="lede">VIDEO → POSE DETECTION → KEYPOINTS → COORDINATES → GEOMETRY → KINEMATICS → MOTION ANALYSIS → SPORTS INSIGHT</p>
+    </div>
+    <svg class="pipeline-diagram" id="pipelineDiagram" viewBox="0 0 1200 190" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="pipeline-nodes" id="pipelineNodes"></div>
+  </section>
+
+  <!-- ================= 12 AI ================= -->
+  <section class="section" id="ai">
+    <div class="section-head" data-reveal>
+      <span class="kicker mono">12 — AI EXTENSION</span>
+      <h2 class="display-l">WHERE MATHEMATICS ENDS AND LEARNING BEGINS</h2>
+    </div>
+    <div class="foundation-split" data-reveal>
+      <div class="card">
+        <h4 class="mono">MATHEMATICAL FOUNDATION</h4>
+        <p>ตำแหน่ง เวกเตอร์ ความเร็ว ความเร่ง และมุมข้อต่อ คำนวณโดยตรงจากสมการ — ไม่ต้องอาศัยการฝึกโมเดลใด ๆ</p>
+      </div>
+      <div class="card">
+        <h4 class="mono">AI EXTENSION (PROPOSED)</h4>
+        <p>แนวคิดสำหรับต่อยอด: นำเวกเตอร์ข้อมูลไปใช้กับ Machine Learning เพื่อจำแนกและประเมินรูปแบบการเคลื่อนไหว — โครงการนี้ยังไม่มีการฝึกโมเดลจริง</p>
+      </div>
+    </div>
+    <div class="ai-flow" data-reveal>
+      <div class="box mono">Movement Data</div><span class="arrow">→</span>
+      <div class="box mono">Feature Extraction</div><span class="arrow">→</span>
+      <div class="box mono">Machine Learning</div><span class="arrow">→</span>
+      <div class="box mono">ŷ = f(X)</div>
+    </div>
+    <p class="mono ai-vector" data-reveal>X = [x₁, y₁, x₂, y₂, … , xₙ, yₙ]</p>
+    <div class="ai-outputs mono" data-reveal>
+      <span>Movement Classification</span><span>Posture Quality</span>
+      <span>Abnormal Movement Detection</span><span>Movement Pattern Analysis</span>
+    </div>
+  </section>
+
+  <!-- ================= 13 FINAL ================= -->
+  <section class="scene final-scene" id="final">
+    <svg class="final-trails" id="finalTrails" aria-hidden="true"></svg>
+    <div class="final-copy">
+      <div class="final-word">MOTION</div>
+      <div class="final-arrow mono">↓</div>
+      <div class="final-word">DATA</div>
+      <div class="final-arrow mono">↓</div>
+      <div class="final-word">INSIGHT</div>
+    </div>
+  </section>
+
+  <section class="section creator-section">
+    <div class="creator-card mono" data-reveal>
+      <b>Krittayod Vipromha</b>
+      2610717302033<br/>
+      Faculty of Engineering<br/>
+      Computer Engineering and Artificial Intelligence<br/>
+      University of the Thai Chamber of Commerce<br/>
+      Academic Year 2026
+    </div>
+  </section>
+
+  <!-- ================= PROJECT ARCHIVE ================= -->
+  <section class="section" id="files">
+    <div class="section-head" data-reveal>
+      <span class="kicker mono">RESEARCH MATERIALS</span>
+      <h2 class="display-l">PROJECT ARCHIVE</h2>
+      <p class="lede">เอกสารและภาพประกอบทั้งหมดที่ใช้ในการจัดทำโครงการนี้</p>
+    </div>
+    <div class="files-grid" id="filesGrid"></div>
+    <p class="image-credit mono" data-reveal>
+      ภาพนักกีฬาทั้ง 6 ภาพใช้เพื่อการศึกษาในโครงงานนี้ — โปรดระบุแหล่งที่มา/ผู้ถ่ายภาพก่อนเผยแพร่สู่สาธารณะ
+    </p>
+  </section>
+
+</main>
+
+<footer class="site-footer mono">
+  <span>© 2026 Krittayod Vipromha — University of the Thai Chamber of Commerce</span>
+  <span><a href="#top">BACK TO TOP ↑</a></span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

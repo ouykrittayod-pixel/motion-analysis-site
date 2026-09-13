@@ -1,0 +1,373 @@
+/* ============================================================ TOKENS */
+:root {
+  --void: #060b14;
+  --panel: #0d1626;
+  --panel-border: rgba(140, 189, 217, 0.16);
+  --grid-line: rgba(140, 189, 217, 0.07);
+  --cyan: #56d9e8;
+  --cyan-dim: #2c6d78;
+  --amber: #e8a23c;
+  --amber-dim: #7a5a2a;
+  --text-hi: #eef4f8;
+  --text-mid: #a9bccd;
+  --text-lo: #6b8098;
+  --font-display: "Space Grotesk", "IBM Plex Sans Thai", sans-serif;
+  --font-body: "IBM Plex Sans Thai", "Space Grotesk", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --section-pad: clamp(2.5rem, 6vw, 6rem);
+  --edge-pad: clamp(1.25rem, 5vw, 4.5rem);
+  --radius-s: 3px;
+  --radius-m: 6px;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--void); scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+body {
+  margin: 0; background: var(--void); color: var(--text-hi);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+::selection { background: var(--cyan); color: var(--void); }
+a { color: inherit; }
+.mono { font-family: var(--font-mono); }
+
+/* ============================================================ BACKGROUND DEPTH */
+.bg-grid {
+  position: fixed; inset: -10%; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(ellipse at 50% 30%, black 45%, transparent 90%);
+}
+.bg-grid-2 { background-size: 96px 96px; opacity: .5; }
+.bg-vignette {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(86,217,232,.05), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(232,162,60,.04), transparent 60%);
+}
+main, footer { position: relative; z-index: 1; }
+
+/* ============================================================ CHROME */
+.progress-rail { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; background: rgba(140,189,217,.1); }
+.progress-fill { height: 100%; width: 100%; transform-origin: left center; transform: scaleX(0); background: linear-gradient(90deg, var(--cyan), var(--amber)); }
+
+.site-nav {
+  position: fixed; top: 22px; right: var(--edge-pad); z-index: 55;
+  display: flex; align-items: center; gap: 1.1rem; font-size: .72rem; color: var(--text-lo);
+}
+.nav-readout { color: var(--cyan); white-space: nowrap; }
+.nav-toggle {
+  background: rgba(13,22,38,.8); border: 1px solid var(--panel-border); color: var(--text-hi);
+  border-radius: var(--radius-s); padding: .4rem .7rem; cursor: pointer; font-size: .72rem;
+  backdrop-filter: blur(6px);
+}
+.nav-menu {
+  position: fixed; top: 60px; right: var(--edge-pad); z-index: 55;
+  background: rgba(9,15,26,.94); border: 1px solid var(--panel-border); border-radius: var(--radius-m);
+  padding: .6rem; display: none; flex-direction: column; min-width: 236px; backdrop-filter: blur(10px);
+  max-height: 74vh; overflow-y: auto;
+}
+.nav-menu.is-open { display: flex; }
+.nav-menu a { display: flex; gap: .6rem; padding: .5rem .6rem; text-decoration: none; font-family: var(--font-mono); font-size: .74rem; color: var(--text-mid); border-radius: var(--radius-s); }
+.nav-menu a .n { color: var(--text-lo); }
+.nav-menu a:hover, .nav-menu a.is-active { background: rgba(86,217,232,.08); color: var(--text-hi); }
+.nav-menu a.is-active .n { color: var(--cyan); }
+
+.joint-tooltip {
+  position: fixed; z-index: 80; pointer-events: none; font-size: .66rem; color: var(--void);
+  background: var(--amber); padding: .18rem .5rem; border-radius: 3px; opacity: 0; transition: opacity .12s;
+}
+.joint-tooltip.is-visible { opacity: 1; }
+
+.data-thread-fixed { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 3; pointer-events: none; opacity: 0; }
+.data-thread-fixed path { fill: none; stroke: var(--amber); stroke-width: 1.5; stroke-dasharray: 2 7; opacity: .6; }
+.data-thread-label { position: fixed; bottom: 1.5rem; right: var(--edge-pad); z-index: 3; font-size: .66rem; color: var(--amber); opacity: 0; pointer-events: none; letter-spacing: .05em; }
+
+/* ============================================================ TYPE */
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 600; }
+.display-xl { font-size: clamp(2.6rem, 7vw, 6rem); line-height: .98; letter-spacing: -.01em; }
+.display-l { font-size: clamp(1.9rem, 4.4vw, 3.2rem); line-height: 1.05; }
+.display-m { font-size: clamp(1.4rem, 2.8vw, 2rem); line-height: 1.12; }
+.kicker { font-size: .74rem; color: var(--cyan); display: block; margin-bottom: .7rem; letter-spacing: .06em; }
+p.lede { font-size: 1.05rem; color: var(--text-mid); max-width: 52ch; }
+p.body-copy { color: var(--text-mid); max-width: 48ch; }
+.tag-illustrative {
+  display: inline-block; font-size: .62rem; color: var(--amber); border: 1px solid var(--amber-dim);
+  border-radius: 999px; padding: .16rem .6rem; letter-spacing: .04em; margin: .6rem 0;
+}
+
+/* ============================================================ SCENE SHELL */
+.scene { position: relative; min-height: 100vh; min-height: 100svh; overflow: hidden; }
+.scene-media { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+/* No baked-in transform: the push-in scale is applied by JS to BOTH the
+   photo and its overlay SVG with the same value and the same (default,
+   centred) transform-origin, so the keypoints stay locked to the athlete
+   at every moment of the zoom. Any scale set on one must be set on the other. */
+.scene-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  /* Only the scene photos and the overlay are promoted. will-change is a
+     budget, not a speed switch: applying it broadly costs memory and can
+     make things slower, so it stays off everything else. */
+  will-change: transform;
+  backface-visibility: hidden;
+}
+/* the two images that actually get filtered/clipped during a hand-off */
+.scene-overlay { will-change: transform; }
+/* static overlay contents must NOT be promoted individually — there are
+   ~40 of them per scene and each layer would cost a texture */
+.ov-bone, .ov-joint, .ov-coord, .ov-trail-dot { will-change: auto; }
+.scene-scrim {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(6,11,20,.95) 0%, rgba(6,11,20,.72) 38%, rgba(6,11,20,.25) 70%, rgba(6,11,20,.55) 100%),
+    linear-gradient(180deg, rgba(6,11,20,.7) 0%, transparent 30%, rgba(6,11,20,.85) 100%);
+}
+.hero-scrim { background: linear-gradient(90deg, rgba(6,11,20,.96) 0%, rgba(6,11,20,.7) 45%, rgba(6,11,20,.2) 75%, rgba(6,11,20,.5) 100%); }
+.scene-overlay { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.scene-overlay .ov-joint { pointer-events: auto; }
+
+/* ---- biomechanics overlay ---- */
+.ov-bone { stroke: var(--cyan); stroke-width: 2.5; opacity: 0; }
+.ov-joint { fill: rgba(6,11,20,.55); stroke: var(--cyan); stroke-width: 3; cursor: pointer; }
+.ov-joint.is-hot { stroke: var(--amber); fill: rgba(232,162,60,.3); }
+.ov-coord { fill: var(--cyan); font-size: 15px; opacity: 0; }
+.ov-angle { fill: none; stroke: var(--amber); stroke-width: 3; }
+.ov-angle-text { fill: var(--amber); font-size: 22px; }
+.ov-vector { stroke: var(--amber); stroke-width: 3.5; }
+.ov-vector-text { fill: var(--amber); font-size: 22px; font-style: italic; }
+.ov-trajectory { fill: none; stroke: var(--cyan); stroke-width: 3.5; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(86,217,232,.5)); }
+.ov-trail-dot { fill: var(--cyan); opacity: 0; }
+
+/* ============================================================ HERO */
+.hero .hero-copy {
+  position: relative; z-index: 2; max-width: 720px;
+  padding: 0 var(--edge-pad); display: flex; flex-direction: column; justify-content: center;
+  min-height: 100vh; min-height: 100svh;
+}
+.hero .display-xl { text-transform: uppercase; }
+.hero .lede { margin-top: 1.3rem; }
+.hero-meta { margin-top: 2rem; font-size: .76rem; color: var(--text-lo); display: flex; flex-direction: column; gap: .15rem; }
+.hero-scroll-cue { position: absolute; bottom: 2.2rem; left: var(--edge-pad); z-index: 2; font-size: .72rem; color: var(--text-lo); display: flex; align-items: center; gap: .5rem; }
+.hero-scroll-cue .arrow { animation: bob 1.8s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(6px);} }
+@media (prefers-reduced-motion: reduce) { .hero-scroll-cue .arrow { animation: none; } }
+
+/* ============================================================ SPLIT SCENES (01/02/04) */
+.split-scene {
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: center; padding: var(--section-pad) var(--edge-pad);
+  min-height: 100vh; overflow: visible;
+}
+.split-scene.reverse .split-copy { order: 2; }
+.split-copy { position: relative; z-index: 2; }
+.split-copy .body-copy + .body-copy { margin-top: 1rem; }
+.split-media {
+  position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--panel-border);
+  border-radius: var(--radius-m); overflow: hidden; background: var(--panel);
+}
+.split-media .scene-img { position: absolute; }
+
+/* ============================================================ 03 MATHEMATICS */
+.math-scene { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+.math-media { position: relative; overflow: hidden; min-height: 60vh; }
+.math-panel { position: relative; z-index: 2; padding: var(--section-pad) var(--edge-pad); display: flex; flex-direction: column; justify-content: center; }
+.math-steps { display: flex; flex-direction: column; gap: .9rem; margin-top: 1.6rem; }
+.math-card {
+  display: grid; grid-template-columns: 42px 1fr; gap: 1rem; align-items: start;
+  background: var(--panel); border: 1px solid var(--panel-border); border-left: 2px solid transparent;
+  border-radius: var(--radius-m); padding: .95rem 1.1rem; transition: border-color .3s, background .3s;
+}
+.math-card.is-active { border-left-color: var(--amber); background: rgba(19,32,52,.95); }
+.math-card .step-index { color: var(--text-lo); font-size: .7rem; padding-top: .2rem; }
+.math-card .step-label-en { font-size: .72rem; color: var(--cyan); display: block; margin-bottom: .35rem; }
+.math-card .step-caption { color: var(--text-mid); font-size: .84rem; margin: .4rem 0 0; }
+.katex-slot { font-size: 1.05rem; color: var(--text-hi); }
+
+/* ============================================================ 04 KINEMATICS */
+.pva-slider { width: 100%; margin-top: 1.1rem; accent-color: var(--cyan); }
+.pva-readout { display: flex; gap: 1.5rem; margin-top: .9rem; font-size: .82rem; color: var(--text-mid); }
+.pva-readout b { color: var(--cyan); display: block; font-size: 1.02rem; }
+.pva-graph { width: 100%; height: 160px; margin-top: .8rem; }
+
+/* ============================================================ SPORT SCENES */
+.scene-ui {
+  position: relative; z-index: 2; min-height: 100vh; min-height: 100svh;
+  padding: var(--section-pad) var(--edge-pad);
+  display: grid; grid-template-columns: minmax(260px, 34%) 1fr;
+  grid-template-rows: auto 1fr auto; gap: 1.2rem; align-content: center;
+}
+.scene-head { grid-column: 1; grid-row: 1; max-width: 42ch; }
+.scene-th { display: block; font-size: 1rem; color: var(--text-mid); margin-top: .3rem; font-family: var(--font-body); }
+.scene-focus { color: var(--text-mid); font-size: .9rem; max-width: 36ch; margin: .8rem 0 0; }
+.scene-formulas { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: .7rem; align-self: start; margin-top: .5rem; }
+.scene-formula {
+  background: rgba(9,15,26,.82); border: 1px solid var(--panel-border); border-left: 2px solid var(--amber);
+  border-radius: var(--radius-s); padding: .6rem .85rem; backdrop-filter: blur(6px); max-width: 34ch; opacity: 0;
+}
+.scene-formula .fx-slot { color: var(--text-hi); font-size: .95rem; }
+.scene-formula .fx-note { display: block; font-size: .74rem; color: var(--text-mid); margin-top: .25rem; }
+.scene-graphs { grid-column: 2; grid-row: 2; justify-self: end; align-self: end; width: min(300px, 38vw); }
+.graphs-label { font-size: .6rem; color: var(--text-lo); display: block; margin-bottom: .3rem; letter-spacing: .05em; }
+.mini-graph { width: 100%; background: rgba(9,15,26,.72); border: 1px solid var(--panel-border); border-radius: var(--radius-s); }
+.mini-graph .axis { stroke: var(--cyan-dim); stroke-width: 1; }
+.mini-graph .g-pos { stroke: var(--cyan); stroke-width: 2.5; }
+.mini-graph .g-vel { stroke: var(--amber); stroke-width: 2.5; }
+.mini-graph .g-acc { stroke: #8fb4c9; stroke-width: 2; stroke-dasharray: 4 3; }
+.mini-graph .g-lab { font-size: 11px; fill: var(--text-lo); }
+.scene-hud { grid-column: 1 / -1; grid-row: 3; display: flex; flex-wrap: wrap; gap: .6rem; }
+.hud-panel {
+  background: rgba(9,15,26,.8); border: 1px solid var(--panel-border); border-radius: var(--radius-m);
+  padding: .7rem .9rem; backdrop-filter: blur(6px); min-width: 140px; opacity: 0;
+}
+.hud-label { font-size: .6rem; color: var(--text-lo); letter-spacing: .06em; display: block; margin-bottom: .12rem; }
+.hud-value { font-size: 1.1rem; color: var(--cyan); }
+.scene-credit { position: absolute; bottom: .8rem; right: var(--edge-pad); font-size: .58rem; color: var(--text-lo); }
+
+
+/* ============================================================
+   SPORT EXPERIENCE — one pinned viewport, six stacked layers
+   ============================================================ */
+#sportsRoot { position: relative; }
+.sport-anchor { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
+
+.sport-viewport {
+  position: relative; width: 100%; height: 100vh; height: 100svh; overflow: hidden;
+}
+
+/* Every sport layer is stacked in the same box. Only the live one (and the
+   incoming one during a hand-off) is rendered at all: display:none keeps
+   the other four completely out of layout, paint and compositing, which is
+   what stops cost from growing with the number of sports. */
+.sport-layer { position: absolute; inset: 0; display: none; }
+.sport-layer.is-live { display: block; }
+.sport-layer .scene-media { position: absolute; inset: 0; overflow: hidden; }
+.sport-layer .scene-ui { min-height: 100vh; min-height: 100svh; }
+
+/* Blur is applied by toggling this class once at the midpoint of a
+   transition, never by writing style.filter on every frame. */
+.sport-layer.is-blurred .scene-img { filter: blur(5px); }
+.sport-layer .scene-img { transition: filter .25s linear; }
+
+.tr-overlay { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+.tr-copy-stack { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.tr-copy-stack .tr-copy {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; gap: .5rem;
+  padding: 0 var(--edge-pad); opacity: 0;
+}
+.tr-particles { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.tr-particles span {
+  position: absolute; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--cyan); opacity: 0; will-change: transform, opacity;
+}
+
+/* ============================================================ TRANSITION SCENES */
+.tr-overlay { z-index: 3; }
+.tr-morph { fill: none; stroke: var(--amber); stroke-width: 4; stroke-linecap: round; filter: drop-shadow(0 0 10px rgba(232,162,60,.55)); }
+.tr-line1 { font-family: var(--font-display); font-size: clamp(1.4rem, 3.6vw, 2.4rem); text-shadow: 0 2px 24px rgba(6,11,20,.9); }
+.tr-line2 { font-size: .8rem; color: var(--cyan); letter-spacing: .04em; }
+/* ============================================================ GENERIC SECTIONS */
+.section { position: relative; padding: var(--section-pad) var(--edge-pad); border-top: 1px solid var(--panel-border); }
+.section-head { margin-bottom: 2rem; max-width: 62ch; }
+
+.pipeline-diagram { width: 100%; height: 190px; margin-top: 2.2rem; }
+.pipeline-line { fill: none; stroke: var(--cyan-dim); stroke-width: 2; }
+.pipeline-pulse { fill: var(--amber); }
+.pipeline-nodes { display: grid; grid-template-columns: repeat(8, 1fr); gap: .5rem; margin-top: -3.4rem; }
+.pipeline-node { background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius-s); padding: .5rem .4rem; text-align: center; font-size: .58rem; color: var(--text-mid); }
+
+.foundation-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.3rem; margin-bottom: 1.8rem; }
+.foundation-split .card { border: 1px solid var(--panel-border); border-radius: var(--radius-m); padding: 1.1rem; background: var(--panel); }
+.foundation-split .card h4 { font-size: .72rem; margin: 0 0 .5rem; color: var(--cyan); }
+.foundation-split .card p { margin: 0; font-size: .85rem; color: var(--text-mid); }
+.ai-flow { display: flex; flex-wrap: wrap; gap: .7rem; align-items: center; margin-bottom: 1.2rem; }
+.ai-flow .box { background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius-m); padding: .8rem 1rem; font-size: .76rem; }
+.ai-flow .arrow { color: var(--cyan-dim); }
+.ai-vector { color: var(--text-mid); font-size: .88rem; }
+.ai-outputs { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.ai-outputs span { font-size: .7rem; color: var(--text-mid); border: 1px solid var(--panel-border); border-radius: 999px; padding: .28rem .75rem; }
+
+/* ============================================================ FINAL */
+.final-scene { display: flex; align-items: center; justify-content: center; }
+.final-trails { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.final-trail { fill: none; stroke: var(--cyan); stroke-width: 3; opacity: .8; }
+.final-trail-label { fill: var(--text-lo); font-size: 18px; }
+.final-copy { position: relative; z-index: 2; text-align: center; display: flex; flex-direction: column; gap: .5rem; }
+.final-word { font-family: var(--font-display); font-size: clamp(2.4rem, 7vw, 5rem); letter-spacing: -.01em; }
+.final-arrow { color: var(--text-lo); }
+.creator-section { display: flex; justify-content: center; border-top: none; }
+.creator-card { border: 1px solid var(--panel-border); border-radius: var(--radius-m); padding: 1.6rem 2.2rem; background: var(--panel); font-size: .84rem; color: var(--text-mid); line-height: 1.8; text-align: center; }
+.creator-card b { color: var(--text-hi); font-size: 1rem; display: block; margin-bottom: .3rem; font-family: var(--font-body); }
+
+/* ============================================================ ARCHIVE */
+.files-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.file-card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius-m); padding: 1.1rem; display: flex; flex-direction: column; gap: .5rem; }
+.file-card.is-primary { border-color: var(--cyan-dim); background: linear-gradient(160deg, rgba(86,217,232,.08), var(--panel)); }
+.file-card .file-type { font-size: .62rem; color: var(--amber); letter-spacing: .06em; }
+.file-card h4 { font-size: .98rem; }
+.file-card .file-original { font-size: .6rem; color: var(--text-lo); word-break: break-all; }
+.file-card p { font-size: .8rem; color: var(--text-mid); margin: 0; flex: 1; }
+.file-card .file-actions { display: flex; gap: .5rem; margin-top: .3rem; }
+.file-card .btn { font-family: var(--font-mono); font-size: .7rem; text-decoration: none; text-align: center; padding: .48rem .7rem; border-radius: var(--radius-s); border: 1px solid var(--panel-border); flex: 1; color: var(--text-hi); }
+.file-card .btn.view { border-color: var(--cyan-dim); }
+.file-card .btn.view:hover { background: rgba(86,217,232,.1); }
+.file-card .btn.download:hover { background: rgba(232,162,60,.1); border-color: var(--amber-dim); }
+.image-credit { margin-top: 1.6rem; font-size: .68rem; color: var(--text-lo); }
+
+.site-footer { padding: 2.2rem var(--edge-pad) 3rem; border-top: 1px solid var(--panel-border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-size: .7rem; color: var(--text-lo); }
+
+/* ============================================================ NO-GSAP FALLBACK */
+/* Scroll timelines never run, so anything JS hides inline must be forced
+   back on (inline styles lose to !important) — otherwise the analysis layer
+   would be stuck invisible. */
+.no-gsap .ov-bone, .no-gsap .ov-coord, .no-gsap .ov-joint,
+.no-gsap .ov-angle, .no-gsap .ov-angle-text,
+.no-gsap .ov-vector, .no-gsap .ov-vector-text,
+.no-gsap .hud-panel, .no-gsap .scene-formula { opacity: 1 !important; }
+.no-gsap .ov-trajectory, .no-gsap .g-pos, .no-gsap .g-vel, .no-gsap .g-acc,
+.no-gsap .final-trail { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+.no-gsap .sport-layer:first-of-type { display: block; opacity: 1 !important; }
+.no-gsap .data-thread-fixed, .no-gsap .data-thread-label { opacity: 1; }
+
+/* ============================================================ RESPONSIVE */
+@media (max-width: 1000px) {
+  .split-scene, .math-scene, .foundation-split { grid-template-columns: 1fr; }
+  .split-scene.reverse .split-copy { order: 0; }
+  .math-media { min-height: 46vh; }
+  .scene-ui { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; align-content: end; padding-bottom: 4rem; }
+  .scene-head, .scene-formulas, .scene-graphs, .scene-hud { grid-column: 1; }
+  .scene-graphs { grid-row: 3; justify-self: stretch; width: 100%; max-width: 340px; }
+  .scene-hud { grid-row: 4; }
+  .scene-scrim { background: linear-gradient(180deg, rgba(6,11,20,.55) 0%, rgba(6,11,20,.35) 35%, rgba(6,11,20,.95) 78%); }
+  .pipeline-nodes { grid-template-columns: repeat(4, 1fr); margin-top: 1rem; }
+  .files-grid { grid-template-columns: 1fr 1fr; }
+  /* keypoint labels get noisy on small screens */
+  .ov-coord { display: none; }
+}
+/* Coarse-pointer / small screens: shed the GPU-expensive effects. The
+   athlete photos and their transitions stay; blur, backdrop blur and the
+   particle layer are what get cut. */
+@media (max-width: 1000px), (hover: none) {
+  .sport-layer.is-blurred .scene-img { filter: none; }
+  .tr-particles { display: none; }
+  .hud-panel, .scene-formula, .nav-toggle, .nav-menu { backdrop-filter: none; }
+  .ov-trajectory { filter: none; }
+  .tr-morph { filter: none; }
+  .bg-grid-2 { display: none; }
+}
+
+@media (max-width: 620px) {
+  .files-grid { grid-template-columns: 1fr; }
+  .site-nav { top: 14px; }
+  .nav-menu { right: 1rem; left: 1rem; min-width: unset; }
+  .scene-formula { max-width: none; }
+  .pva-readout { flex-wrap: wrap; gap: 1rem; }
+  .ov-joint { stroke-width: 4; }
+}

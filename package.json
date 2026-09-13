@@ -1,0 +1,17 @@
+{
+  "name": "motion-analysis-system",
+  "version": "1.0.0",
+  "description": "ระบบวิเคราะห์การเคลื่อนไหวสำหรับสนับสนุนวิทยาศาสตร์การกีฬา — an interactive scrollytelling site on the mathematics behind sports motion analysis.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8"
+  }
+}
+
